@@ -24,6 +24,32 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
   final probGen = ProbabilityGenerator();
   final double _tallestPlatformHeight = 50;
   final List<Platform> _platforms = [];
+  final List<EnemyPlatform> _enemies = [];
+
+  void _maybeAddEnemy() {
+    if (specialPlatforms['enemy'] != true) {
+      return;
+    }
+    if (probGen.generateWithProbability(20)) {
+      var enemy = EnemyPlatform(
+        position: Vector2(_generateNextX(100), _generateNextY()),
+      );
+      add(enemy);
+      _enemies.add(enemy);
+      _cleanupEnemies();
+    }
+  }
+
+  void _cleanupEnemies() {
+    final screenBottom = gameRef.player.position.y +
+        (gameRef.size.x / 2) +
+        gameRef.screenBufferSpace;
+
+    while (_enemies.isNotEmpty && _enemies.first.position.y > screenBottom) {
+      remove(_enemies.first);
+      _enemies.removeAt(0);
+    }
+  }
 
   // Add Platforms: Add onMount method
   @override // Add lines from here...
@@ -75,6 +101,7 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
 
       _cleanupPlatforms();
       // Losing the game: Add call to _maybeAddEnemy()
+      _maybeAddEnemy();
       // Powerups: Add call to _maybeAddPowerup();
     }
 
@@ -108,6 +135,9 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
         break;
       case 2:
         enableSpecialty('broken');
+        break;
+      case 5:
+        enableSpecialty('enemy');
         break;
     }
   }
@@ -175,7 +205,7 @@ class ObjectManager extends Component with HasGameRef<DoodleDash> {
     return NormalPlatform(position: position);
   }
 
-  // Losing the game: Add enemy code
+  // Losing the game: Add enemy codesss
 
   // Powerups: Add Power-Up code
 }
